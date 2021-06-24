@@ -12,13 +12,18 @@
 					<div class="card-body bg-light">
 
 						<div class="form-group">
-							<label class="mt-1 mb-3"><strong>Entrypoint</strong></label>
+							<label class="mt-1 mb-3"><strong>Select</strong></label>
 							<select class="form-control" name="" id="" v-model="value.entrypoint">
 								<option v-for="entrypoint in entrypoints" :value="entrypoint.value">{{ entrypoint.label }}</option>
 							</select>
 						</div>
 
 						<div class="form-group">
+							<label class="mt-1 mb-3"><strong>Filter</strong></label>
+							<vue-query-builder :rules="rules" v-model="value.query"></vue-query-builder>
+						</div>
+
+						<div class="form-group" v-if="available_relations.length">
 							<label class="mt-1 mb-3"><strong>Relations</strong></label>
 
 							<div class="form-check" v-for="(relation, relation_i) in available_relations">
@@ -30,15 +35,10 @@
 						</div>
 
 						<div class="form-group">
-							<label class="mt-1 mb-3"><strong>Filter</strong></label>
-							<vue-query-builder :rules="rules" v-model="value.query"></vue-query-builder>
-						</div>
-
-						<div class="form-group">
 							<label class="mt-1 mb-3"><strong>Export Fields</strong></label>
 
 							<div class="row">
-								<div class="col-12 col-md-2" v-for="(group_fields, group_name) in exportable_groups">
+								<div class="col-12 col-sm-4" v-for="(group_fields, group_name) in exportable_groups">
 
 									<div class="card mb-4">
 										<div class="card-header">
