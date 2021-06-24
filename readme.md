@@ -1,6 +1,6 @@
 # Nova Reports
 
-## Instalation
+## Installation
 
 ### Prepare the database
 
