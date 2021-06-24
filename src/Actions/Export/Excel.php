@@ -32,7 +32,7 @@ class Excel extends Action
 				->forReport($model)
 				->store( $model->export_path );
 			
-			return Action::download('/nova-vendor/querybuilder-field/download/'.$model->id, 'download.xlsx');
+			return Action::download('/nova-vendor/eightbitsnl/nova-reports/download/'.$model->id, 'download.xlsx');
         }
     }
 
