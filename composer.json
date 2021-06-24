@@ -1,0 +1,41 @@
+{
+    "name": "eightbitsnl/nova-reports",
+    "description": "Create reports in Laravel Nova",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Eightbitsnl\\NovaReports\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Loek Wetzels",
+            "email": "loek.wetzels@gmail.com",
+            "homepage": "https://eightbits.nl",
+            "role": "Developer"
+        }
+    ],
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://nova.laravel.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "require": {
+        "php": ">=7.2.0",
+        "laravel/nova": "^3.0",
+        "maatwebsite/excel": "^3.1"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Eightbitsnl\\NovaReports\\NovaReportsServiceProvider"
+            ]
+        }
+    },
+    "config": {
+        "sort-packages": true
+    }
+}
