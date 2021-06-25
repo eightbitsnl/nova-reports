@@ -60,6 +60,24 @@ php artisan migrate
 	See https://dabernathy89.github.io/vue-query-builder/configuration.html#rules
 
 
+1. (Optionally) Declare return types on your relations. This helps the `Reportable` trait to find relations.
+```php
+// before:
+public function comments()
+{
+	return $this->hasMany(Comment::class);
+}
+
+// after
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
+public function comments() : HasMany
+{
+	return $this->hasMany(Comment::class);
+}
+```
+
+
 ### Usage
 
 #### Accessors
