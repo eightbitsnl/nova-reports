@@ -365,9 +365,9 @@ class Report extends Model
 			break;
 
 			case preg_match('/ADD_[0-9]+_DAY/', $value):
-			case preg_match('/ADD_[0-9]+_MONTHS/', $value):
+			case preg_match('/ADD_[0-9]+_MONTH/', $value):
 			case preg_match('/SUB_[0-9]+_DAY/', $value):
-			case preg_match('/SUB_[0-9]+_MONTHS/', $value):
+			case preg_match('/SUB_[0-9]+_MONTH/', $value):
 				
 				list($do, $val, $unit) = explode('_', $value);
 				
