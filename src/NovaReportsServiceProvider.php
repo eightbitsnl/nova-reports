@@ -16,7 +16,9 @@ class NovaReportsServiceProvider extends ServiceProvider
     {
 		$this->registerPublishables();
 
-        // $this->loadViewsFrom(__DIR__.'/../resources/views', 'NovaReports');
+        $this->loadMigrationsFrom(__DIR__.'/database/migrations');
+
+        $this->loadViewsFrom(__DIR__.'/resources/views', 'NovaReports');
 
         $this->app->booted(function () {
             $this->routes();
@@ -52,7 +54,13 @@ class NovaReportsServiceProvider extends ServiceProvider
         Route::middleware(['nova', Authorize::class])
             ->prefix('/nova-vendor/eightbitsnl/nova-reports')
             ->group(
-                __DIR__.'/../routes/api.php'
+                __DIR__.'/routes/api.php'
+            );
+
+        Route::middleware(['nova', Authorize::class])
+            ->prefix('/reports')
+            ->group(
+                __DIR__.'/routes/web.php'
             );
     }
 }

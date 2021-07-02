@@ -2,5 +2,5 @@ let mix = require('laravel-mix')
 
 mix
   .setPublicPath('dist')
-  .js('resources/js/field.js', 'js')
-  .sass('resources/sass/field.scss', 'css')
+  .js('src/resources/js/tool.js', 'js')
+  .sass('src/resources/sass/tool.scss', 'css')

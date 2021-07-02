@@ -45,10 +45,17 @@ class Report extends Resource
     public function fields(Request $request)
     {
         return [
-            ID::make(__('ID'), 'id')->sortable(),
-			
+            ID::make(__('ID'), 'id')
+                ->sortable(),
+
 			Text::make('Title')
 				->rules('required'),
+
+            $this->when( $this->uuid ,
+                Text::make('Webview', function(){
+                    return '<a class="no-underline dim text-primary font-bold" href="'. route('report.webview', ['report'=>$this->uuid]) .'" target="_blank">View</a>';
+                })->asHtml()
+            ),
 
 			Textarea::make('Note')
 				->nullable()
