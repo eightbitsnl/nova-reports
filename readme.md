@@ -60,22 +60,38 @@ php artisan migrate
 
 
 1. (Optionally) Declare return types on your relations. This helps the `Reportable` trait to find relations.
-```php
-// before:
-public function comments()
-{
-	return $this->hasMany(Comment::class);
-}
+	```php
+	// before:
+	public function comments()
+	{
+		return $this->hasMany(Comment::class);
+	}
 
-// after
-use Illuminate\Database\Eloquent\Relations\HasMany;
+	// after
+	use Illuminate\Database\Eloquent\Relations\HasMany;
 
-public function comments() : HasMany
-{
-	return $this->hasMany(Comment::class);
-}
-```
+	public function comments() : HasMany
+	{
+		return $this->hasMany(Comment::class);
+	}
+	```
 
+
+1. (Optionally) Create a Policy  
+
+	Generate a Policy class
+	```shell
+	php artisan make:policy ReportPolicy
+	```
+
+	Register the Policy in `AuthServiceProvider.php`
+	```php
+	// file: app/Providers/AuthServiceProvider.php
+	protected $policies = [
+		// ....
+		\Eightbitsnl\NovaReports\Models\Report::class => \App\Policies\ReportPolicy::class,
+	];
+	```
 
 ### Usage
 
