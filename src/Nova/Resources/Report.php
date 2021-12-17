@@ -51,7 +51,7 @@ class Report extends Resource
 			Text::make('Title')
 				->rules('required'),
 
-            $this->when( $this->uuid ,
+            $this->when( config('nova-reports.webview.enabled') && $this->uuid,
                 Text::make('Webview', function(){
                     return '<a class="no-underline dim text-primary font-bold" href="'. route('report.webview', ['report'=>$this->uuid]) .'" target="_blank">View</a>';
                 })->asHtml()

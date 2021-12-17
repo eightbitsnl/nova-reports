@@ -1,8 +1,9 @@
 <?php
 
 use Eightbitsnl\NovaReports\Http\Controllers\ReportController;
+use Eightbitsnl\NovaReports\Http\Middleware\Authorize;
 
-Route::middleware( config('nova.middleware') )->group(function () {
+Route::middleware(array_merge(config('nova.middleware'), [Authorize::class]))->group(function () {
 
 	Route::get('/{report:uuid}', [ReportController::class, 'show'])
 		->middleware('can:view,report')

@@ -14,11 +14,19 @@ class NovaReportsServiceProvider extends ServiceProvider
 {
     public function boot()
     {
+
+		$this->offerPublishing();
+
 		$this->registerPublishables();
 
         $this->loadMigrationsFrom(__DIR__.'/database/migrations');
 
         $this->loadViewsFrom(__DIR__.'/resources/views', 'NovaReports');
+
+        $this->mergeConfigFrom(
+            __DIR__.'/../config/nova-reports.php',
+            'nova-reports'
+        );
 
         $this->app->booted(function () {
             $this->routes();
@@ -37,13 +45,20 @@ class NovaReportsServiceProvider extends ServiceProvider
 
     protected function registerPublishables(): void
     {
-
-        if (! class_exists('CreateReportsTable')) {
-            $this->publishes([
-                __DIR__.'/../database/migrations/create_reports_table.php.stub' => database_path('migrations/'.date('Y_m_d_His', time()).'_create_reports_table.php'),
-            ], 'migrations');
-        }
+		
     }
+
+	protected function offerPublishing()
+	{
+		if (! function_exists('config_path')) {
+			// function not available and 'publish' not relevant in Lumen
+			return;
+		}
+
+		$this->publishes([
+			__DIR__.'/../config/nova-reports.php' => config_path('nova-reports.php'),
+		], 'config');
+	}
 
     protected function routes()
     {
