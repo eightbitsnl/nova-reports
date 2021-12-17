@@ -159,8 +159,8 @@ class Report extends Model
 	{
 
 		return collect([
-			'equals' => ['*'],
-			'does not equal' => ['*'],
+			'equals' => ['*', 'select'],
+			'does not equal' => ['*', 'select'],
 			'contains' => ['text'],
 			'does not contain' => ['text'],
 			'is empty' => ['*'],
@@ -171,9 +171,11 @@ class Report extends Model
 			'before or equal' => ['date'],
 			'after' => ['date'],
 			'after or equal' => ['date'],
+
+			'scope' => ['scope'],
 		  ])
 			->filter(function($o) use ($scope){
-				return array_intersect([$scope, '*'], $o);
+				return array_intersect([$scope], $o);
 			})
 			->keys();
 
@@ -221,6 +223,7 @@ class Report extends Model
 	 */
 	public function getRawSql()
 	{
+		$this->querybuilder = $this->getQuerybuilderInstance();
 		return vsprintf(str_replace(array('?'), array('\'%s\''), $this->querybuilder->toSql()), $this->querybuilder->getBindings());
 	}
 
@@ -260,6 +263,7 @@ class Report extends Model
 	 */
 	protected function parseQBRule(&$query, $rule, $logicalOperator = null)
 	{
+		
 		$method = ($logicalOperator == 'AND') ? 'where' : 'orWhere';
 		$value = $rule['query']['value'];
 
@@ -315,6 +319,22 @@ class Report extends Model
 			break;
 			case 'after or equal':
 				$operator = '>=';
+			break;
+			case 'scope':
+
+				switch($logicalOperator)
+				{
+					default:
+					case 'AND':
+						return $query->{$rule['query']['rule']}($value);
+					break;
+					case 'OR':
+						return $query->orWhere(function($query) use ($rule, $value){
+							$query->{$rule['query']['rule']}($value);
+						});
+					break;
+				}
+				
 			break;
 		}
 

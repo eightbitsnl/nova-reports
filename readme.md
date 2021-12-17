@@ -59,6 +59,44 @@ php artisan migrate
 	See https://dabernathy89.github.io/vue-query-builder/configuration.html#rules
 
 
+	### Using Local Scopes
+	It's possible to use [Local Scopes](https://laravel.com/docs/8.x/eloquent#local-scopes).
+
+
+	```php
+	// write your Local Scope, for example:
+	public function scopeWhereOrganisation($query, $organisation)
+	{
+		$query->whereHas('organisations', function($query) use ($organisation){
+			$query->where('id', $organisation->id);
+		});
+	}
+
+	// define field in getReportRules
+	public function getReportRules()
+	{
+		return [
+			// ...
+			[
+				'type' => "select",
+				'id' => "whereOrganisation", // name of your Local Scope method
+				'label' => "Organisation",
+				'operators' => Report::getOperators('scope'),
+				'choices' => Organisation::all()->map(function($organisation){
+						return [
+							'label' => $organisation->name,
+							'value' => $organisation->id,
+						];
+					})
+				])
+			],
+			// ...
+		];
+	}
+	
+	```
+
+
 1. (Optionally) Declare return types on your relations. This helps the `Reportable` trait to find relations.
 	```php
 	// before:
