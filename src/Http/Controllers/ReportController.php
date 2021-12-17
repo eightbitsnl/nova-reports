@@ -15,12 +15,15 @@ class ReportController extends Controller {
      */
     public function show(Report $report)
     {
-		$items = $report->getResults();
+		// check count
+		if( $report->getCount() > config('nova-reports.webview.max_count', 10) ){
+			throw new \Exception('This report has more than '. config('nova-reports.webview.max_count') .' rows. Please use the export action to download the report.');
+		}
 
         return view('NovaReports::reports.webview', [
             'title' => $report->title,
-            'items' => $items
+            'items' => $report->getResults()
         ]);
-        // return response()->json($items);
+        
     }
 }

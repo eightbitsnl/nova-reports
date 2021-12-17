@@ -194,10 +194,15 @@ class Report extends Model
 
 		return [
 			// 'query' => $this->getRawSql(),
-			'count' => $this->querybuilder->count(),
+			'count' => $this->getCount(),
 			'first' => $this->querybuilder->first(),
 			// 'all' => $all
 		];
+	}
+
+	public function getCount()
+	{
+		return $this->getQuerybuilderInstance()->count();
 	}
 
 	public function getQueryBuilderInstance()

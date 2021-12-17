@@ -2,6 +2,7 @@
 
 	return [
 		'webview' => [
-			'enabled' => false
+			'enabled' => false,
+			'max_count' => 100
 		]
 	];
