@@ -3,19 +3,23 @@
 namespace Eightbitsnl\NovaReports\Exports;
 
 use Eightbitsnl\NovaReports\Models\Report;
+use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\Exportable;
-use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithProperties;
+use Maatwebsite\Excel\Events\BeforeWriting;
+use Maatwebsite\Excel\Excel as MaatwebsiteExcel;
+use Maatwebsite\Excel\Files\LocalTemporaryFile;
 
-class Excel implements FromQuery, WithHeadings, WithMapping, WithProperties, ShouldAutoSize
+class Excel implements FromQuery, WithHeadings, WithMapping, WithProperties, ShouldAutoSize, WithEvents
 {
 	use Exportable;
 	
-	private $report;
+	private Report $report;
 	
 	public function forReport(Report $report)
 	{
@@ -27,7 +31,7 @@ class Excel implements FromQuery, WithHeadings, WithMapping, WithProperties, Sho
     {
         return [
             'creator'        => config('app.name'),
-            // 'lastModifiedBy' => 'ENTER',
+            // 'lastModifiedBy' => '',
             'title'          => $this->report->title,
             'description'    => $this->report->note,
             // 'subject'        => '',
@@ -139,5 +143,26 @@ class Excel implements FromQuery, WithHeadings, WithMapping, WithProperties, Sho
 	public function query()
 	{
 		return $this->report->getQuerybuilderInstance();
+	}
+
+	public function registerEvents(): array
+	{
+		return [
+
+			BeforeWriting::class => function(BeforeWriting $event){
+
+				if( !empty($this->report->templatefile) )
+				{
+					// load template
+					$templateFile = new LocalTemporaryFile(Storage::disk('local')->path($this->report->templatefile));
+					$event->writer->reopen($templateFile, MaatwebsiteExcel::XLSX);
+					
+					// call the export on the first sheet
+					$event->writer->getSheetByIndex(0)->export($event->getConcernable());	
+				}
+
+
+			}
+		];
 	}
 }

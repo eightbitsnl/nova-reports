@@ -10,6 +10,7 @@ use Laravel\Nova\Fields\Textarea;
 use Laravel\Nova\Http\Requests\NovaRequest;
 use Eightbitsnl\NovaReports\Actions\Export\Excel;
 use Eightbitsnl\NovaReports\Nova\Fields\QuerybuilderField;
+use Laravel\Nova\Fields\File;
 
 class Report extends Resource
 {
@@ -56,6 +57,11 @@ class Report extends Resource
                     return '<a class="no-underline dim text-primary font-bold" href="'. route('report.webview', ['report'=>$this->uuid]) .'" target="_blank">View</a>';
                 })->asHtml()
             ),
+
+            File::make('Template', 'templatefile')
+                ->disk('local')
+                ->acceptedTypes('.xlsx')
+                ->help('Optional Excel file template. First sheet will be filled with report data'),
 
 			Textarea::make('Note')
 				->nullable()
