@@ -15,8 +15,6 @@ class NovaReportsServiceProvider extends ServiceProvider
     public function boot()
     {
 
-		$this->offerPublishing();
-
 		$this->registerPublishables();
 
         $this->loadMigrationsFrom(__DIR__.'/database/migrations');
@@ -45,20 +43,14 @@ class NovaReportsServiceProvider extends ServiceProvider
 
     protected function registerPublishables(): void
     {
-		
-    }
-
-	protected function offerPublishing()
-	{
-		if (! function_exists('config_path')) {
-			// function not available and 'publish' not relevant in Lumen
-			return;
-		}
-
 		$this->publishes([
+            __DIR__.'/../dist/css/webview.css' => public_path('vendor/nova-reports/css/webview.css'),
+        ], 'nova-reports/assets');
+
+        $this->publishes([
 			__DIR__.'/../config/nova-reports.php' => config_path('nova-reports.php'),
-		], 'config');
-	}
+		], 'nova-reports/config');
+    }
 
     protected function routes()
     {
