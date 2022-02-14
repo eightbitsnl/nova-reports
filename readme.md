@@ -198,3 +198,30 @@ etc...
 {{SUB_2_MONTH}}
 etc...
 ```
+
+
+---
+
+## Excel Templates
+
+You can upload an `.xlsx` file as an export template.
+The first sheet will be filled with report data. You're free to add additional sheets as needed. These can reference the first sheet with raw report data, so you can use excel formulas to calculate sums, filter data, use pivottables, etc...
+
+
+---
+
+## Webviews
+
+Webviews are experimental and for that reason disabled by default. You can enable them in the config.
+
+
+1. Publish the config:  
+`php artisan vendor:publish --tag=nova-reports/config`  
+This will create a `config/nova-reports.php`
+
+1. Set `webview.enabled` to `true`
+
+
+1. Publish assets  
+`php artisan vendor:publish --tag=nova-reports/assets`
+
