@@ -3,7 +3,7 @@ let tailwindcss = require('tailwindcss');
 
 mix
   .setPublicPath('dist')
-  .js('src/resources/js/tool.js', 'js')
+  .js('src/resources/js/tool.js', 'js').vue()
   .sass('src/resources/sass/tool.scss', 'css');
 
   mix
