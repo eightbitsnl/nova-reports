@@ -167,6 +167,8 @@ class Report extends Model
 			'is not empty' => ['*'],
 			'begins with' => ['text'],
 			'ends with' => ['text'],
+			'date equals' => ['date'],
+			'date does not equal' => ['date'],
 			'before' => ['date'],
 			'before or equal' => ['date'],
 			'after' => ['date'],
@@ -313,16 +315,32 @@ class Report extends Model
 				$value = '%'.$value;
 			break;
 
+			case 'date equals':
+				$method = ($logicalOperator == 'AND') ? 'whereDate' : 'orWhereDate';
+				$operator = '=';
+			break;
+			case 'date does not equal':
+				$method = ($logicalOperator == 'AND') ? 'whereDate' : 'orWhereDate';
+				$operator = '<>';
+			break;
+			case 'date before':
 			case 'before':
+				$method = ($logicalOperator == 'AND') ? 'whereDate' : 'orWhereDate';
 				$operator = '<';
 			break;
+			case 'date before or equal':
 			case 'before or equal':
+				$method = ($logicalOperator == 'AND') ? 'whereDate' : 'orWhereDate';
 				$operator = '<=';
 			break;
+			case 'date after':
 			case 'after':
+				$method = ($logicalOperator == 'AND') ? 'whereDate' : 'orWhereDate';
 				$operator = '>';
 			break;
+			case 'date after or equal':
 			case 'after or equal':
+				$method = ($logicalOperator == 'AND') ? 'whereDate' : 'orWhereDate';
 				$operator = '>=';
 			break;
 			case 'scope':
