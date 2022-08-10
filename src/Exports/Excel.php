@@ -18,9 +18,9 @@ use Maatwebsite\Excel\Files\LocalTemporaryFile;
 class Excel implements FromQuery, WithHeadings, WithMapping, WithProperties, ShouldAutoSize, WithEvents
 {
 	use Exportable;
-	
-	private Report $report;
-	
+
+	protected Report $report;
+
 	public function forReport(Report $report)
 	{
 		$this->report = $report;
@@ -41,7 +41,7 @@ class Excel implements FromQuery, WithHeadings, WithMapping, WithProperties, Sho
             // 'company'        => '',
         ];
     }
-	
+
 	public function map($model): array
 	{
 		// all the fields that will be reported
@@ -82,10 +82,10 @@ class Excel implements FromQuery, WithHeadings, WithMapping, WithProperties, Sho
 
 		// fill $rel_data relations
 		$rel_data = $relations_assoc->map(function($relation_fields, $relation_name) use ($model){
-		
+
 			$related = $model->$relation_name;
 			$related_rows = null;
-			
+
 			// dump( get_class($related), is_a($related, Illuminate\Database\Eloquent\Collection::class) );
 			if( is_a($related, \Illuminate\Database\Eloquent\Collection::class))
 			{
@@ -100,7 +100,7 @@ class Excel implements FromQuery, WithHeadings, WithMapping, WithProperties, Sho
 			else
 			{
 				if(!is_null($related))
-					$related_rows = collect([$related->only($relation_fields)]); 
+					$related_rows = collect([$related->only($relation_fields)]);
 			}
 
 			if(is_null($related_rows))
@@ -113,7 +113,7 @@ class Excel implements FromQuery, WithHeadings, WithMapping, WithProperties, Sho
 			});
 
 		})->toArray();
-		
+
 		// crossjoin the base row data , with all relations data
 		$crossjoined_rows = call_user_func_array( [collect([$base]), 'crossJoin'], $rel_data);
 
@@ -133,13 +133,13 @@ class Excel implements FromQuery, WithHeadings, WithMapping, WithProperties, Sho
 
 		return collect($rows)->map(function($r){ return collect($r)->values(); })->toArray();
 	}
-	
-	
+
+
 	public function headings(): array
 	{
 		return $this->report->getFieldsToReport();
 	}
-	
+
 	public function query()
 	{
 		return $this->report->getQuerybuilderInstance();
@@ -156,9 +156,9 @@ class Excel implements FromQuery, WithHeadings, WithMapping, WithProperties, Sho
 					// load template
 					$templateFile = new LocalTemporaryFile(Storage::disk('local')->path($this->report->templatefile));
 					$event->writer->reopen($templateFile, MaatwebsiteExcel::XLSX);
-					
+
 					// call the export on the first sheet
-					$event->writer->getSheetByIndex(0)->export($event->getConcernable());	
+					$event->writer->getSheetByIndex(0)->export($event->getConcernable());
 				}
 
 
