@@ -12,8 +12,8 @@ class Authorize
      * @return \Illuminate\Http\Response
      */
     public function handle($request, $next)
-    {	
-		return $next($request);
+    {
+        return $next($request);
     }
 
     /**

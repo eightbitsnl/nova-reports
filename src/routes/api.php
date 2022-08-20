@@ -6,61 +6,50 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
+Route::get("init/{report?}", function (Request $request, Report $report = null) {
+    // prepare output
+    // --------------------------------------------------
+    $result = [];
 
-Route::get('init/{report?}', function (Request $request, Report $report = null) {
+    // generate a list of selectable entrypoints
+    // --------------------------------------------------
+    $result["entrypoints"] = Report::getReportables()->mapWithKeys(function ($class) {
+        $data = [
+            "value" => $class,
+            "label" => Str::plural(Str::title(Str::snake(class_basename($class), " "))),
+            "rules" => (new $class())->getReportRules(),
+            "available_relations" => $class::getReportableRelations(),
+            "exportable_fields" => $class::getExportableFields(),
+        ];
 
-	// prepare output
-	// --------------------------------------------------
-	$result = [];
+        return [$class => $data];
+    });
 
-	// generate a list of selectable entrypoints
-	// --------------------------------------------------
-	$result['entrypoints'] = Report::getReportables()->mapWithKeys(function($class){
+    // selected entrypoint
+    // --------------------------------------------------
+    // $result['entrypoint'] = (!is_null($report) && $report->entrypoint) ? $report->entrypoint : $result['entrypoints']->first()['value'];
 
-		$data = [
-			'value' => $class,
-			'label' => Str::plural(Str::title(Str::snake(class_basename($class), ' '))),
-			'rules' => (new $class)->getReportRules(),
-			'available_relations' => $class::getReportableRelations(),
-			'exportable_fields' => $class::getExportableFields(),
-		];
-
-		return [$class => $data];
-	});
-
-
-	// selected entrypoint
-	// --------------------------------------------------
-	// $result['entrypoint'] = (!is_null($report) && $report->entrypoint) ? $report->entrypoint : $result['entrypoints']->first()['value'];
-
-	// response
-	// --------------------------------------------------
-	return response()->json($result);
-
+    // response
+    // --------------------------------------------------
+    return response()->json($result);
 });
 
-Route::post('preview/{report?}', function (Request $request, Report $report = null) {
-
-	return response()->json(
-		(new Report([
-			'entrypoint' => request()->input('entrypoint'),
-			'relations' => request()->input('relations'),
-			'query' => request()->input('query'),
-		]))->preview()
-	);
-
+Route::post("preview/{report?}", function (Request $request, Report $report = null) {
+    return response()->json(
+        (new Report([
+            "entrypoint" => request()->input("entrypoint"),
+            "relations" => request()->input("relations"),
+            "query" => request()->input("query"),
+        ]))->preview()
+    );
 });
 
+Route::get("/download/{report?}", function (Request $request, Report $report = null) {
+    $latest = $report->getLatestExportFile(); /** @todo move to \Eightbitsnl\NovaReports\Exports */
 
-Route::get('/download/{report?}', function(Request $request, Report $report = null) {
-	
-	$latest = $report->getLatestExportFile();
-	
-	if( empty($latest))
-	{
-		abort(404);
-	}
+    if (empty($latest)) {
+        abort(404);
+    }
 
-	return Storage::download($latest, 'report-'.$report->id.'-'.basename($latest));
-	
+    return Storage::download($latest, "report-" . $report->id . "-" . basename($latest));
 });

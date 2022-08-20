@@ -11,10 +11,10 @@ class QuerybuilderField extends Field
      *
      * @var string
      */
-	public $component = 'querybuilder-field';
-	
-	public $showOnIndex = false;
-	public $showOnDetail = false;
-	public $showOnCreation = true;
-	public $showOnUpdate = true;
+    public $component = "querybuilder-field";
+
+    public $showOnIndex = false;
+    public $showOnDetail = false;
+    public $showOnCreation = true;
+    public $showOnUpdate = true;
 }

@@ -11,29 +11,44 @@ use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithProperties;
+use Maatwebsite\Excel\Concerns\WithDefaultStyles;
 use Maatwebsite\Excel\Events\BeforeWriting;
 use Maatwebsite\Excel\Excel as MaatwebsiteExcel;
 use Maatwebsite\Excel\Files\LocalTemporaryFile;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Style;
 
-class Excel implements FromQuery, WithHeadings, WithMapping, WithProperties, ShouldAutoSize, WithEvents
+class Excel implements FromQuery, WithHeadings, WithMapping, WithProperties, ShouldAutoSize, WithEvents, WithDefaultStyles
 {
-	use Exportable;
+    use Exportable;
 
-	protected Report $report;
+    /** @var \Eightbitsnl\NovaReports\Models\Report */
+    protected Report $report;
 
-	public function forReport(Report $report)
-	{
-		$this->report = $report;
-		return $this;
-	}
+    /**
+     * Set $report property
+     *
+     * @param Report $report
+     * @return static $this
+     */
+    public function forReport(Report $report)
+    {
+        $this->report = $report;
+        return $this;
+    }
 
+    /**
+     * Worksheet properties
+     *
+     * @return array array of worksheet properties
+     */
     public function properties(): array
     {
         return [
-            'creator'        => config('app.name'),
+            "creator" => config("app.name"),
             // 'lastModifiedBy' => '',
-            'title'          => $this->report->title,
-            'description'    => $this->report->note,
+            "title" => $this->report->title,
+            "description" => $this->report->note,
             // 'subject'        => '',
             // 'keywords'       => '',
             // 'category'       => '',
@@ -42,127 +57,90 @@ class Excel implements FromQuery, WithHeadings, WithMapping, WithProperties, Sho
         ];
     }
 
-	public function map($model): array
-	{
-		// all the fields that will be reported
-		$fieldnames = collect($this->report->getFieldsToReport());
+    /**
+     * Map the data that needs to be added as row
+     * @see https://docs.laravel-excel.com/3.1/exports/mapping.html
+     *
+     * @param mixed $model
+     * @return array rows for the export
+     */
+    public function map($model): array
+    {
+        $rows = $this->report->getRowsForModel($model);
 
-		// find the attributes
-		$attributes = $fieldnames->filter(function($fieldname) use ($model){
-			list($group, $field) = explode('.',$fieldname);
-			return ($group == strtolower(class_basename($model)));
-		});
+        return collect($rows)
+            ->map(function ($r) {
+                return collect($r)->values();
+            })
+            ->toArray();
+    }
 
-		// relations
-		$relations = $fieldnames->diff($attributes);
+    /**
+     * Add a heading row to the export
+     * @see https://docs.laravel-excel.com/3.1/exports/mapping.html#adding-a-heading-row
+     *
+     * @return array heading row
+     */
+    public function headings(): array
+    {
+        return $this->report->getFieldsToReport()->toArray();
+    }
 
-		$relations_assoc = collect($relations->reduce(function($result, $fieldname){
-			list($relation, $attr) = explode('.', $fieldname);
+    /**
+     * The query for the export. Behind the scenes this query is executed in chunks.
+     * @see https://docs.laravel-excel.com/3.1/exports/from-query.html#from-query
+     *
+     * @return void
+     */
+    public function query()
+    {
+        return $this->report->getQuerybuilderInstance();
+    }
 
-			if( !array_key_exists($relation, $result) )
-				$result[$relation] = [];
+    /**
+     * Style styling columns, cells and rows.
+     * @see https://docs.laravel-excel.com/3.1/exports/column-formatting.html#styling
+     */
+    // public function styles(Worksheet $sheet)
+    // {
+    //     $sheet
+    //         ->getStyle("A:ZZ")
+    //         ->getAlignment()
+    //         ->setWrapText(true);
+    // }
 
-			$result[$relation][] = $attr;
+    public function defaultStyles(Style $defaultStyle)
+    {
+        // set alignment
+        $defaultStyle
+            ->getAlignment()
+            ->setHorizontal(Alignment::HORIZONTAL_LEFT)
+            ->setVertical(Alignment::VERTICAL_TOP)
+            ->setWrapText(true);
 
-			return $result;
+        // set wrap
+        return $defaultStyle;
+    }
 
-		}, []));
+    /**
+     * Register events, to add custom behaviour to the export.
+     * @see https://docs.laravel-excel.com/3.1/exports/extending.html#events
+     *
+     * @return array
+     */
+    public function registerEvents(): array
+    {
+        return [
+            BeforeWriting::class => function (BeforeWriting $event) {
+                if (!empty($this->report->templatefile)) {
+                    // load template
+                    $templateFile = new LocalTemporaryFile(Storage::disk("local")->path($this->report->templatefile));
+                    $event->writer->reopen($templateFile, MaatwebsiteExcel::XLSX);
 
-
-		// start with a simple array of only the attributes for the given model
-		$base = $model->only($attributes->map(function($fieldname){
-					return explode('.', $fieldname)[1];
-				})->toArray());
-
-		// now add the model classname as a prefix to the attributes:
-		// `{attr}` will become `{classname}.{attr}'
-		$base = collect($base)->mapWithKeys(function($v, $k) use ($model){
-			return [strtolower(class_basename($model)).'.'.$k => $v];
-		});
-
-		// fill $rel_data relations
-		$rel_data = $relations_assoc->map(function($relation_fields, $relation_name) use ($model){
-
-			$related = $model->$relation_name;
-			$related_rows = null;
-
-			// dump( get_class($related), is_a($related, Illuminate\Database\Eloquent\Collection::class) );
-			if( is_a($related, \Illuminate\Database\Eloquent\Collection::class))
-			{
-				if($related->count() > 0)
-				{
-					$related_rows = $related->map(function($rel) use ($relation_fields){
-						return collect($rel->only($relation_fields));
-					});
-				}
-			}
-
-			else
-			{
-				if(!is_null($related))
-					$related_rows = collect([$related->only($relation_fields)]);
-			}
-
-			if(is_null($related_rows))
-				$related_rows = collect([array_fill_keys($relation_fields, null)]);
-
-			return $related_rows->map(function($row) use ($relation_name){
-				return collect($row)->mapWithKeys(function($v, $k) use ($relation_name){
-						return [$relation_name.'.'.$k=>$v];
-				});
-			});
-
-		})->toArray();
-
-		// crossjoin the base row data , with all relations data
-		$crossjoined_rows = call_user_func_array( [collect([$base]), 'crossJoin'], $rel_data);
-
-		$rows = $crossjoined_rows->map(function($r){
-
-			$res = [];
-			foreach($r as $i)
-			{
-				foreach($i as $k => $v)
-				{
-				$res[$k] = $v;
-				}
-			}
-
-			return $res;
-		})->toArray();
-
-		return collect($rows)->map(function($r){ return collect($r)->values(); })->toArray();
-	}
-
-
-	public function headings(): array
-	{
-		return $this->report->getFieldsToReport();
-	}
-
-	public function query()
-	{
-		return $this->report->getQuerybuilderInstance();
-	}
-
-	public function registerEvents(): array
-	{
-		return [
-
-			BeforeWriting::class => function(BeforeWriting $event){
-
-				if( !empty($this->report->templatefile) )
-				{
-					// load template
-					$templateFile = new LocalTemporaryFile(Storage::disk('local')->path($this->report->templatefile));
-					$event->writer->reopen($templateFile, MaatwebsiteExcel::XLSX);
-
-					// call the export on the first sheet
-					$event->writer->getSheetByIndex(0)->export($event->getConcernable());
-				}
-
-
-			}
-		];
-	}
+                    // call the export on the first sheet
+                    $event->writer->getSheetByIndex(0)->export($event->getConcernable());
+                }
+            },
+        ];
+    }
 }

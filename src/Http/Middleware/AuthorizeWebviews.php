@@ -13,10 +13,11 @@ class AuthorizeWebviews
      */
     public function handle($request, $next)
     {
-		if( config('nova-reports.webview.enabled') == false)
-			throw new \Exception('Webviews are disabled. Please enable it in config/nova-reports.php');
-			
-		return $next($request);
+        if (config("nova-reports.webview.enabled") == false) {
+            throw new \Exception("Webviews are disabled. Please enable it in config/nova-reports.php");
+        }
+
+        return $next($request);
     }
 
     /**
