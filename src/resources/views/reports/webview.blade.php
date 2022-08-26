@@ -23,9 +23,9 @@
 			<table class="table-auto w-full border-2">
 				<thead class="sticky top-0">
 					<tr class="bg-gray-200 uppercase text-sm leading-normal">
-						@foreach ($items->first() as $key => $value)
+						@foreach ($headings as $key => $value)
 							<th class="p-2 text-left whitespace-nowrap">
-								{!!  str_replace('.','<br/>',$key) !!}
+								{!!  str_replace("\n",'<br/>',$value) !!}
 							</th>
 						@endforeach
 					</tr>

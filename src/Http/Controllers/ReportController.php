@@ -22,6 +22,7 @@ class ReportController extends Controller
 
         return view("NovaReports::reports.webview", [
             "title" => $report->title,
+            "headings" => $report->getHeadings(),
             "items" => $report->getRows(),
         ]);
     }

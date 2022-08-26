@@ -87,9 +87,9 @@ class Report extends Model
         // start by finding all exportable fields
         return collect($this->entrypoint::getExportableFields())
             // map them to flattened array in dot notation
-            ->map(function ($v, $k) {
-                return collect($v["fields"])->map(function ($v) use ($k) {
-                    return $k . "." . $v;
+            ->map(function ($v, $group) {
+                return collect($v["fields"])->map(function ($v, $k) use ($group) {
+                    return $group . "." . $k;
                 });
             })
             ->flatten()
@@ -457,6 +457,21 @@ class Report extends Model
     public function getModelCount()
     {
         return $this->getQueryBuilderInstance()->count();
+    }
+
+    /**
+     * Get the Headings
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    public function getHeadings(): Collection
+    {
+        $exportable_fields = (new $this->entrypoint)::getExportableFields(true);
+
+        return $this->getFieldsToReport()->mapWithKeys(function($field) use ($exportable_fields){
+            list($group, $field_key) = explode('.', $field);
+            return [$field => $group. PHP_EOL .$exportable_fields[$group]['fields'][$field_key]];
+        });
     }
 
     /**

@@ -83,7 +83,7 @@ class Excel implements FromQuery, WithHeadings, WithMapping, WithProperties, Sho
      */
     public function headings(): array
     {
-        return $this->report->getFieldsToReport()->toArray();
+        return $this->report->getHeadings()->toArray();
     }
 
     /**

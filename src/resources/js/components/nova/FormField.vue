@@ -41,11 +41,9 @@
                                         </div>
 
                                         <div class="card-body">
-                                            <div class="form-check" v-for="(field_name, field_i) in group_fields['fields']">
-                                                <input class="form-check-input" type="checkbox" :value="group_name + '.' + field_name" :id="'field-' + group_name + '.' + field_name" v-model="value.export_fields" />
-                                                <label class="form-check-label" :for="'field-' + group_name + '.' + field_name">
-                                                    {{ field_name }}
-                                                </label>
+                                            <div class="form-check" v-for="(field_name, field_value) in group_fields['fields']">
+                                                <input class="form-check-input" type="checkbox" :value="group_name + '.' + field_value" :id="'field-' + group_name + '.' + field_name" v-model="value.export_fields" />
+                                                <label class="form-check-label" :for="'field-' + group_name + '.' + field_name"> {{ field_name }} </label>
                                             </div>
                                         </div>
                                     </div>
