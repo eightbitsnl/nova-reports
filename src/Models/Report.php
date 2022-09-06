@@ -449,28 +449,17 @@ class Report extends Model
     }
 
     /**
-     * Retrieve the "count" result of the reports query.
-     *
-     * @param  string  $columns
-     * @return int
-     */
-    public function getModelCount()
-    {
-        return $this->getQueryBuilderInstance()->count();
-    }
-
-    /**
      * Get the Headings
      *
      * @return \Illuminate\Support\Collection
      */
     public function getHeadings(): Collection
     {
-        $exportable_fields = (new $this->entrypoint)::getExportableFields(true);
+        $exportable_fields = (new $this->entrypoint())::getExportableFields(true);
 
-        return $this->getFieldsToReport()->mapWithKeys(function($field) use ($exportable_fields){
-            list($group, $field_key) = explode('.', $field);
-            return [$field => $group. PHP_EOL .$exportable_fields[$group]['fields'][$field_key]];
+        return $this->getFieldsToReport()->mapWithKeys(function ($field) use ($exportable_fields) {
+            list($group, $field_key) = explode(".", $field);
+            return [$field => $group . PHP_EOL . $exportable_fields[$group]["fields"][$field_key]];
         });
     }
 

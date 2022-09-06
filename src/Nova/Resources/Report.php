@@ -71,7 +71,7 @@ class Report extends Resource
             Text::make("Title")->rules("required"),
 
             Text::make("Count", function () {
-                return $this->resource->getModelCount();
+                return $this->resource->getCount();
             }),
 
             $this->when(
