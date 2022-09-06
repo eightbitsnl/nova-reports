@@ -2,6 +2,7 @@
 
 namespace Eightbitsnl\NovaReports;
 
+use Eightbitsnl\NovaReports\Console\Commands\ReportsOutput;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Eightbitsnl\NovaReports\Http\Middleware\Authorize;
@@ -20,6 +21,8 @@ class NovaReportsServiceProvider extends ServiceProvider
         $this->loadViewsFrom(__DIR__ . "/resources/views", "NovaReports");
 
         $this->mergeConfigFrom(__DIR__ . "/../config/nova-reports.php", "nova-reports");
+
+        $this->commands([ReportsOutput::class]);
 
         $this->app->booted(function () {
             $this->routes();
