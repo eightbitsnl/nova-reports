@@ -562,7 +562,7 @@ class Report extends Model
     protected function getHydratedDataCollection($model): Collection
     {
         $fields_entrypoint = $this->getFieldsToReportForEntryPoint();
-        $fields_relationshops = $this->getFieldsToReportForRelationsAssoc();
+        $fields_relationships = $this->getFieldsToReportForRelationsAssoc();
 
         // start with a simple array of only the fields for the given model
         $base = $model->only(
@@ -580,7 +580,7 @@ class Report extends Model
         });
 
         // fill $rel_data relations
-        $rel_data = $fields_relationshops
+        $rel_data = $fields_relationships
             ->map(function ($relation_fields, $relation_name) use ($model) {
                 $related = $model->$relation_name;
                 $related_rows = null;

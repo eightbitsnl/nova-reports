@@ -16,7 +16,7 @@ trait Reportable
      *
      * @return array
      */
-    public static function getReportableFields() : array
+    public static function getReportableFields(): array
     {
         return (new ReflectionClass(static::class))->getStaticPropertyValue("reportable");
     }
@@ -45,7 +45,7 @@ trait Reportable
             // filter only relations that have a $reportable property
             ->filter(function ($method) {
                 $class = (new static())->$method()->getRelated();
-                return (new ReflectionClass($class))->hasProperty("reportable");
+                return (new ReflectionClass($class))->hasMethod("getReportableFields");
             })
             ->values()
             ->toArray();
@@ -68,13 +68,16 @@ trait Reportable
     private static function getReportableFieldsAssoc(array $fields)
     {
         // if $fields is alread an associative array, just return
-        if(array_keys($fields) !== range(0, count($fields) - 1))
+        if (array_keys($fields) !== range(0, count($fields) - 1)) {
             return $fields;
+        }
 
         // make $fields assosiative
-        return collect($fields)->mapWithKeys(function($value){
-            return [$value => $value];
-        })->toArray();
+        return collect($fields)
+            ->mapWithKeys(function ($value) {
+                return [$value => $value];
+            })
+            ->toArray();
     }
 
     public static function getExportableFields($includeRelations = true)
@@ -82,7 +85,7 @@ trait Reportable
         $result = [
             strtolower(class_basename(static::class)) => [
                 "type" => "main",
-                "fields" => static::getReportableFields()
+                "fields" => static::getReportableFields(),
             ],
         ];
 
