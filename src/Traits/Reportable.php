@@ -85,7 +85,7 @@ trait Reportable
         $result = [
             strtolower(class_basename(static::class)) => [
                 "type" => "main",
-                "fields" => static::getReportableFields(),
+                "fields" => static::getReportableFieldsAssoc(static::getReportableFields()),
             ],
         ];
 
