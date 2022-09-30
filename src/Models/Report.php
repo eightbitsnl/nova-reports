@@ -657,10 +657,9 @@ class Report extends Model
         $hydrated = $this->getHydratedDataCollection($model);
 
         $fields_for_entry_point = $hydrated->only($this->getFieldsToReportForEntryPoint());
-        $fields_for_relations = $hydrated->except($this->getFieldsToReportForEntryPoint())->toArray();
+        $fields_for_relations = $hydrated->except($this->getFieldsToReportForEntryPoint());
 
-        // crossjoin the base row data , with all relations data
-        $crossjoined_rows = call_user_func_array([collect([$fields_for_entry_point]), "crossJoin"], $fields_for_relations);
+        $crossjoined_rows = call_user_func_array([collect([$fields_for_entry_point]), "crossJoin"], $fields_for_relations->toArray());
 
         $rows = $crossjoined_rows->map(function ($r) {
             $res = [];

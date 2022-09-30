@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 trait Reportable
 {
     // abstract
-    abstract public function getReportRules();
+    abstract public function getReportRules(): array;
 
     /**
      * The Reportable fields
