@@ -624,7 +624,7 @@ class Report extends Model
 
         return collect([
             collect($hydrated)->mapWithKeys(function ($value, $key) {
-                if (is_array($value)) {
+                if (is_iterable($value)) {
                     $value = implode(
                         PHP_EOL . PHP_EOL,
                         collect($value)
