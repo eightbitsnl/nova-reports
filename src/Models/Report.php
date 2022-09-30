@@ -18,6 +18,7 @@ class Report extends Model
     use SoftDeletes;
 
     const OUTPUT_TYPE_CROSSJOIN = "CROSSJOIN";
+    const OUTPUT_TYPE_CROSSJOIN_DEEP = "CROSSJOIN_DEEP"; // @todo ?
     const OUTPUT_TYPE_FLAT = "FLAT";
 
     private $querybuilder;
@@ -695,6 +696,49 @@ class Report extends Model
             return $res;
         });
 
+        // @todo
+        if ($this->grouping_option == static::OUTPUT_TYPE_CROSSJOIN_DEEP) {
+            $rows = collect($rows)
+                ->map(function ($row) {
+                    $result = [];
+                    static::iterable_field_to_rows($row, $result);
+                    return $result;
+                })
+                ->flatten(1);
+        }
+
         return $rows;
+    }
+
+    private static function row_first_iterable($row)
+    {
+        foreach ($row as $k => $v) {
+            if (is_iterable($v)) {
+                return $k;
+            }
+        }
+        return null;
+    }
+
+    private static function iterable_field_to_rows($row, &$result)
+    {
+        $iterable_field = static::row_first_iterable($row);
+        if (is_null($iterable_field)) {
+            $result = array_merge($result, [$row]);
+            return $row;
+        }
+
+        $other_fields = collect($row)->except($iterable_field);
+
+        $rows = [];
+
+        $values = collect($row)->get($iterable_field);
+        foreach ($values as $value) {
+            $rows[] = $other_fields->merge([$iterable_field => $value])->toArray();
+        }
+
+        return array_map(function ($i) use (&$result) {
+            return static::iterable_field_to_rows($i, $result);
+        }, $rows);
     }
 }
