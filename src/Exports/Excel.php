@@ -134,7 +134,8 @@ class Excel implements FromQuery, WithHeadings, WithMapping, WithProperties, Sho
             BeforeWriting::class => function (BeforeWriting $event) {
                 if (!empty($this->report->templatefile)) {
                     // load template
-                    $templateFile = new LocalTemporaryFile(Storage::disk("local")->path($this->report->templatefile));
+                    $templateFile = (new LocalTemporaryFile( tempnam(sys_get_temp_dir(), 'nova-reports-template') ))->copyFrom($this->report->templatefile, config('nova-reports.filesystem'));
+                    
                     $event->writer->reopen($templateFile, MaatwebsiteExcel::XLSX);
 
                     // call the export on the first sheet

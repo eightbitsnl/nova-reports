@@ -25,15 +25,17 @@ class Excel extends Action
     {
         $action = config("nova-reports.exporter");
 
+        /** @var \Eightbitsnl\NovaReports\Exports\Excel $reflect */
         $reflect = new ReflectionClass($action);
 
         throw_unless($reflect->isInstantiable(), new Exception("Nova Reports export class($action) is not instantiable!"));
 
+        /** @var \Eightbitsnl\NovaReports\Models\Report $model */
         foreach ($models as $model) {
             $reflect
                 ->newInstance()
                 ->forReport($model)
-                ->store($model->export_path);
+                ->store($model->export_path, config('nova-reports.filesystem'));
 
             return Action::download("/nova-vendor/eightbitsnl/nova-reports/download/" . $model->id, "download.xlsx");
         }

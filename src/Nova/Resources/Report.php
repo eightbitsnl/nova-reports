@@ -82,7 +82,8 @@ class Report extends Resource
             ),
 
             File::make("Template", "templatefile")
-                ->disk("local")
+                ->disk(config('nova-reports.filesystem'))
+                ->path('reports/templates')
                 ->acceptedTypes(".xlsx")
                 ->help("Optional Excel file template. First sheet will be filled with report data"),
 

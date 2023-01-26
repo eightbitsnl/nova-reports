@@ -51,5 +51,5 @@ Route::get("/download/{report?}", function (Request $request, Report $report = n
         abort(404);
     }
 
-    return Storage::download($latest, "report-" . $report->id . "-" . basename($latest));
+    return Storage::disk(config('nova-reports.filesystem'))->download($latest, "report-" . $report->id . "-" . basename($latest));
 });

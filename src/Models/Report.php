@@ -104,7 +104,7 @@ class Report extends Model
     /** @todo move to \Eightbitsnl\NovaReports\Exports */
     public function getLatestExportFile()
     {
-        $files = Storage::files($this->export_dir);
+        $files = Storage::disk(config('nova-reports.filesystem'))->files($this->export_dir);
         if (count($files)) {
             return collect($files)->last();
         }
