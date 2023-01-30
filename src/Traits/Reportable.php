@@ -44,8 +44,8 @@ trait Reportable
             })
             // filter only relations that have a $reportable property
             ->filter(function ($method) {
-                $class = (new static())->$method()->getRelated();
-                return (new ReflectionClass($class))->hasMethod("getReportableFields");
+                $class = new ReflectionClass((new static())->$method()->getRelated());
+                return $class->hasMethod("getReportableFields") || $class->hasProperty('reportable');
             })
             ->values()
             ->toArray();
@@ -58,7 +58,18 @@ trait Reportable
         return collect($relations)
             ->mapWithKeys(function ($relation) {
                 $class = (new static())->$relation()->getRelated();
-                $fields = static::getReportableFieldsAssoc($class::getReportableFields());
+
+                $fields = [];
+
+                $relectionClass = new ReflectionClass($class);
+                if($relectionClass->hasMethod("getReportableFields"))
+                {
+                    $fields = static::getReportableFieldsAssoc($class::getReportableFields());
+                }
+                elseif($relectionClass->hasProperty("reportable"))
+                {
+                    $fields = static::getReportableFieldsAssoc(static::$reportable);
+                }
 
                 return [$relation => $fields];
             })
