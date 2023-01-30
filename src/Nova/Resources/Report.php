@@ -98,6 +98,7 @@ class Report extends Resource
                     ModelsReport::OUTPUT_TYPE_CROSSJOIN => "Crossjoin",
                     ModelsReport::OUTPUT_TYPE_FLAT => "Flat",
                 ])
+                ->default(ModelsReport::OUTPUT_TYPE_CROSSJOIN)
                 ->displayUsingLabels()
                 ->hideFromIndex(),
         ];
