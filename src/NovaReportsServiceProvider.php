@@ -60,11 +60,11 @@ class NovaReportsServiceProvider extends ServiceProvider
         }
 
         Route::middleware(["nova", Authorize::class])
-            ->prefix("/nova-vendor/eightbitsnl/nova-reports")
+            ->prefix( config('nova-reports.routes.prefix.api') )
             ->group(__DIR__ . "/routes/api.php");
 
         Route::middleware(["nova", Authorize::class])
-            ->prefix("/reports")
+            ->prefix( config('nova-reports.routes.prefix.web') )
             ->group(__DIR__ . "/routes/web.php");
     }
 }

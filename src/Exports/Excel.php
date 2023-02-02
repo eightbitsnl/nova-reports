@@ -17,13 +17,26 @@ use Maatwebsite\Excel\Excel as MaatwebsiteExcel;
 use Maatwebsite\Excel\Files\LocalTemporaryFile;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Style;
+use Laravel\Nova\Actions\Action;
 
 class Excel implements FromQuery, WithHeadings, WithMapping, WithProperties, ShouldAutoSize, WithEvents, WithDefaultStyles
 {
     use Exportable;
 
+    /**
+     * The Callback that is fired when the Report is available for dwnload
+     *
+     * @param bool $store_result The result of the exporter store() method
+     * @param string $export_path Where the file is or will be stored
+     * @return array a Download Repsonse
+     */
+    public function reportAvailableCallback($store_result, $export_path)
+    {
+        return Action::download( route('nova-reports.download', ['report'=>$this->report->uuid]), "download.xlsx");
+    }
+
     /** @var \Eightbitsnl\NovaReports\Models\Report */
-    protected Report $report;
+    public Report $report;
 
     /**
      * Set $report property

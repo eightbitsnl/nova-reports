@@ -18,10 +18,10 @@ class Excel extends Action
      * Perform the action on the given models.
      *
      * @param  \Laravel\Nova\Fields\ActionFields  $fields
-     * @param  \Illuminate\Support\Collection  $models
+     * @param  \Illuminate\Support\Collection  $reports
      * @return mixed
      */
-    public function handle(ActionFields $fields, Collection $models)
+    public function handle(ActionFields $fields, Collection $reports)
     {
         $action = config("nova-reports.exporter");
 
@@ -30,14 +30,18 @@ class Excel extends Action
 
         throw_unless($reflect->isInstantiable(), new Exception("Nova Reports export class($action) is not instantiable!"));
 
-        /** @var \Eightbitsnl\NovaReports\Models\Report $model */
-        foreach ($models as $model) {
-            $reflect
-                ->newInstance()
-                ->forReport($model)
-                ->store($model->export_path, config('nova-reports.filesystem'));
+        /** @var \Eightbitsnl\NovaReports\Models\Report $report */
+        foreach ($reports as $report) {
 
-            return Action::download("/nova-vendor/eightbitsnl/nova-reports/download/" . $model->id, "download.xlsx");
+            $exporter = $reflect->newInstance();
+
+            $export_path = $report->export_path;
+
+            $export_result = $exporter
+                ->forReport($report)
+                ->store($export_path, config('nova-reports.filesystem'));
+
+            return $exporter->reportAvailableCallback($export_result, $export_path);
         }
     }
 

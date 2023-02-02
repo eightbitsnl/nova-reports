@@ -9,7 +9,9 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
 
 class Report extends Model
 {
@@ -71,6 +73,27 @@ class Report extends Model
     public function getExportPathAttribute()
     {
         return $this->export_dir . "/" . date("YmdHis") . ".xlsx";
+    }
+
+    public function getDownloadUrl()
+    {
+        return route('nova-reports.download', ['report' => $this->uuid]);
+    }
+
+    public function getDownloadUrlSigned(string $path)
+    {
+        $encrypted = Crypt::encryptString(json_encode([
+            'u' => optional(auth()->user())->id,
+            'p' => $path
+        ]));
+        
+        $url = URL::temporarySignedRoute(
+            'nova-reports.download_signed',
+            now()->addMinutes(config('nova-reports.keep_exports_for_minutes')),
+            ['encrypted' => $encrypted]
+        );
+
+        return $url;
     }
 
     /**

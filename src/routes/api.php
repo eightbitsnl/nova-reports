@@ -25,10 +25,6 @@ Route::get("init/{report?}", function (Request $request, Report $report = null) 
         return [$class => $data];
     });
 
-    // selected entrypoint
-    // --------------------------------------------------
-    // $result['entrypoint'] = (!is_null($report) && $report->entrypoint) ? $report->entrypoint : $result['entrypoints']->first()['value'];
-
     // response
     // --------------------------------------------------
     return response()->json($result);
@@ -42,14 +38,4 @@ Route::post("preview/{report?}", function (Request $request, Report $report = nu
             "query" => request()->input("query"),
         ]))->preview()
     );
-});
-
-Route::get("/download/{report?}", function (Request $request, Report $report = null) {
-    $latest = $report->getLatestExportFile(); /** @todo move to \Eightbitsnl\NovaReports\Exports */
-
-    if (empty($latest)) {
-        abort(404);
-    }
-
-    return Storage::disk(config('nova-reports.filesystem'))->download($latest, "report-" . $report->id . "-" . basename($latest));
 });

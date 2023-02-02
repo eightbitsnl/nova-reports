@@ -12,13 +12,31 @@ return [
     */
 	'filesystem' => env('NOVA_REPORTS_FILESYSTEM', env('FILESYSTEM_DRIVER', 'local')),
 
+    /**
+     * The number of minutes for which exports must be kept on the filesystem
+     */
+    'keep_exports_for_minutes' => 60,
+
 	/*
     |--------------------------------------------------------------------------
-    | Web view setting
+    | Route setting
     |--------------------------------------------------------------------------
     |
     | This value's is for enabling settings in the table view
     |
+    */
+
+	'routes' => [
+		'prefix' => [
+            'api' => "/nova-vendor/eightbitsnl/nova-reports",
+            'web' => "/nova-vendor/eightbitsnl/nova-reports",
+        ],
+	],
+
+	/*
+    |--------------------------------------------------------------------------
+    | Web view setting
+    |--------------------------------------------------------------------------
     */
 
 	'webview' => [
