@@ -13,7 +13,7 @@ Route::get("init/{report?}", function (Request $request, Report $report = null) 
 
     // generate a list of selectable entrypoints
     // --------------------------------------------------
-    $result["entrypoints"] = Report::getReportables()->mapWithKeys(function ($class) {
+    $result["entrypoints"] = Report::getEntrypoints()->mapWithKeys(function ($class) {
         $data = [
             "value" => $class,
             "label" => Str::plural(Str::title(Str::snake(class_basename($class), " "))),

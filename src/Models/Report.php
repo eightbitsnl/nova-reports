@@ -187,6 +187,20 @@ class Report extends Model
     }
 
     /**
+     * Get a collection of all Classes that are Entrypoints
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    public static function getEntrypoints(): Collection
+    {
+        return static::getReportables()
+            ->filter(function ($classname) {
+                return !empty((new $classname())->getReportRules());
+            })
+            ->values();
+    }
+
+    /**
      * Get a (scoped) list of operators
      *
      * @param string $scope
@@ -609,7 +623,7 @@ class Report extends Model
                 $related = $model->$relation_name;
                 $related_rows = null;
 
-                if (is_a($related, \Illuminate\Database\Eloquent\Collection::class)) {
+                if ($related instanceof \Illuminate\Support\Collection) {
                     if ($related->count() > 0) {
                         $related_rows = $related->map(function ($rel) use ($relation_fields) {
                             return collect($rel->only($relation_fields));
