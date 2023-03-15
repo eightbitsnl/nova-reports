@@ -68,7 +68,7 @@ trait Reportable
                 }
                 elseif($relectionClass->hasProperty("reportable"))
                 {
-                    $fields = static::getReportableFieldsAssoc(static::$reportable);
+                    $fields = static::getReportableFieldsAssoc($class::$reportable);
                 }
 
                 return [$relation => $fields];
