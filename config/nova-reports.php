@@ -2,7 +2,7 @@
 return [
 
 
-	/*
+    /*
     |--------------------------------------------------------------------------
     | Filesystem setting
     |--------------------------------------------------------------------------
@@ -10,14 +10,14 @@ return [
     | The filesystem to use
     |
     */
-	'filesystem' => env('NOVA_REPORTS_FILESYSTEM', env('FILESYSTEM_DRIVER', 'local')),
+    'filesystem' => env('NOVA_REPORTS_FILESYSTEM', env('FILESYSTEM_DRIVER', 'local')),
 
     /**
      * The number of minutes for which exports must be kept on the filesystem
      */
     'keep_exports_for_minutes' => 60,
 
-	/*
+    /*
     |--------------------------------------------------------------------------
     | Route setting
     |--------------------------------------------------------------------------
@@ -26,25 +26,36 @@ return [
     |
     */
 
-	'routes' => [
-		'prefix' => [
+    'routes' => [
+        'prefix' => [
             'api' => "/nova-vendor/eightbitsnl/nova-reports",
             'web' => "/nova-vendor/eightbitsnl/nova-reports",
         ],
-	],
+    ],
 
-	/*
+    /*
     |--------------------------------------------------------------------------
     | Web view setting
     |--------------------------------------------------------------------------
     */
 
-	'webview' => [
-		'enabled' => false,
-		'max_count' => 100
-	],
+    'webview' => [
+        'enabled' => false,
+        'max_count' => 100
+    ],
 
-	/*
+    /*
+    |--------------------------------------------------------------------------
+    | Querybuilder class
+    |--------------------------------------------------------------------------
+    |
+    | If you want to change the default querybuilder class you can swap it out
+	| for you own class.
+    |
+    */
+    'querybuilder_class' => \Eightbitsnl\NovaReports\Models\ReportQueryBuilder::class,
+
+    /*
     |--------------------------------------------------------------------------
     | Export class
     |--------------------------------------------------------------------------
@@ -54,9 +65,9 @@ return [
     |
     */
 
-	'exporter' => \Eightbitsnl\NovaReports\Exports\Excel::class,
+    'exporter' => \Eightbitsnl\NovaReports\Exports\Excel::class,
 
-	/*
+    /*
     |--------------------------------------------------------------------------
     | Index Query class
     |--------------------------------------------------------------------------
@@ -67,7 +78,7 @@ return [
     |
     */
 
-	'index_query' => \Eightbitsnl\NovaReports\Actions\IndexQueryBuilder::class,
+    'index_query' => \Eightbitsnl\NovaReports\Actions\IndexQueryBuilder::class,
 
 
 
