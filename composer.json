@@ -25,10 +25,12 @@
     "prefer-stable": true,
     "require": {
         "php": ">=7.2.0",
-        "illuminate/support": "^7|^8|^9",
-        "illuminate/database": "^7|^8|^9",
-        "laravel/nova": "^3.0",
+        "illuminate/support": "^7|^8|^9|^10",
+        "illuminate/database": "^7|^8|^9|^10",
         "maatwebsite/excel": "^3.1"
+    },
+    "require-dev": {
+        "laravel/nova": "^3.0|^4.0"
     },
     "extra": {
         "laravel": {

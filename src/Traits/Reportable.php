@@ -36,7 +36,7 @@ trait Reportable
         return collect((new ReflectionClass(static::class))->getMethods(ReflectionMethod::IS_PUBLIC))
             // filter methods that return a Relation
             ->filter(function ($method) {
-                return ($type = $method->getReturnType()) && is_subclass_of($type->getName(), Relation::class);
+                return ($type = $method->getReturnType()) && is_subclass_of($type->getName(), Relation::class) && empty($method->getParameters());
             })
             // map to relation name
             ->map(function ($method) {

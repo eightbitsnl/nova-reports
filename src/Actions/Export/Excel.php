@@ -44,14 +44,4 @@ class Excel extends Action
             return $exporter->reportAvailableCallback($export_result, $export_path);
         }
     }
-
-    /**
-     * Get the fields available on the action.
-     *
-     * @return array
-     */
-    public function fields()
-    {
-        return [];
-    }
 }

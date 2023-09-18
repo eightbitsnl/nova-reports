@@ -28,7 +28,7 @@ class Report extends Model
      *
      * @var string[]
      */
-    protected $fillable = ["entrypoint", "loadrelation", "query"];
+    protected $fillable = ["entrypoint", "loadrelation", "query", "export_fields"];
 
     /**
      * The attributes that should be cast.
@@ -161,12 +161,16 @@ class Report extends Model
      */
     public function getReportfieldsAttribute(): array
     {
-        return [
-            "entrypoint" => $this->entrypoint,
-            "loadrelation" => $this->loadrelation,
-            "query" => $this->query,
-            "export_fields" => $this->export_fields ?: [],
-        ];
+        return []; //
+        // return [
+        //     "entrypoint" => $this->entrypoint,
+        //     "loadrelation" => $this->loadrelation,
+        //     "query" => $this->query ?: [
+        //         "logicalOperator" => "any",
+        //         "children" => [],
+        //     ],
+        //     "export_fields" => $this->export_fields ?: [],
+        // ];
     }
 
     /**
@@ -250,13 +254,31 @@ class Report extends Model
     }
 
     /**
+     * Web Preview a Visual Query Builder
+     *
+     */
+    public function webpreview()
+    {
+        $firstModel = $this->getModelsQuery()->first();
+
+        $rows = $this->getRowsForModel($firstModel);
+
+        return [
+            "count" => $this->getCount(),
+            "headings" => $this->getHeadings(),
+            "items" => $rows
+            // 'all' => $all
+        ];
+    }
+
+    /**
      * The number of rows for the Query Builder Instance
      *
      * @return integer
      */
     public function getCount(): int
     {
-        return $this->getQuerybuilderInstance()->count();
+        return $this->getModelsQuery()->count();
     }
 
     /**
@@ -280,9 +302,16 @@ class Report extends Model
         return vsprintf(str_replace(["?"], ['\'%s\''], $this->querybuilder->toSql()), $this->querybuilder->getBindings());
     }
 
-
-
-
+    /**
+     * Instantiate the reports query as a "select" statement
+     *
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function getModelsQuery(): Builder
+    {
+        return $this->getQuerybuilderInstance()
+            ->with($this->loadrelation);
+    }
 
     /**
      * Execute the reports query as a "select" statement.
@@ -291,8 +320,7 @@ class Report extends Model
      */
     public function getModels()
     {
-        return $this->getQuerybuilderInstance()
-            ->with($this->loadrelation)
+        return $this->getModelsQuery()
             ->get();
     }
 

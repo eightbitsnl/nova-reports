@@ -1,5 +1,7 @@
 <?php
 
+use Eightbitsnl\NovaReports\Http\Requests\ReportPreviewRequest;
+use Eightbitsnl\NovaReports\Http\Requests\ReportWebPreviewRequest;
 use Eightbitsnl\NovaReports\Models\Report;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -10,6 +12,11 @@ Route::get("init/{report?}", function (Request $request, Report $report = null) 
     // prepare output
     // --------------------------------------------------
     $result = [];
+
+    $result["entrypoint"] = $report->entrypoint;
+    $result["loadrelation"] = $report->loadrelation;
+    $result["query"] = $report->query;
+    $result["export_fields"] = $report->export_fields ?: [];
 
     // generate a list of selectable entrypoints
     // --------------------------------------------------
@@ -30,12 +37,31 @@ Route::get("init/{report?}", function (Request $request, Report $report = null) 
     return response()->json($result);
 });
 
-Route::post("preview/{report?}", function (Request $request, Report $report = null) {
+Route::post("preview/{report?}", function (ReportPreviewRequest $request, Report $report = null) {
+
+    $validated = $request->validated();
+
     return response()->json(
         (new Report([
-            "entrypoint" => request()->input("entrypoint"),
-            "relations" => request()->input("relations"),
-            "query" => request()->input("query"),
+            "entrypoint" => $validated["entrypoint"],
+            "relations" => $validated["relations"],
+            "query" => $validated["query"],
+            // "grouping_option" => $validated["grouping_option"],
         ]))->preview()
+    );
+});
+
+Route::post("webpreview/{report?}", function (ReportWebPreviewRequest $request, Report $report = null) {
+
+    $validated = $request->validated();
+
+    return response()->json(
+        (new Report([
+            "entrypoint" => $validated["entrypoint"],
+            "export_fields" => $validated["export_fields"],
+            "relations" => $validated["loadrelation"],
+            "query" => $validated["query"],
+            // "grouping_option" => $validated["grouping_option"],
+        ]))->webpreview()
     );
 });

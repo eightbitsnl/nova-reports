@@ -1,6 +1,6 @@
 <template>
-    <default-field :field="field" :errors="errors" :show-help-text="showHelpText" :full-width-content="true">
-        <template slot="field">
+    <DefaultField :field="field" :errors="errors" :show-help-text="showHelpText" :full-width-content="fullWidthContent">
+        <template #field>
             <div class="querybuilderfield-wrapper">
                 <div class="card mb-4">
                     <div class="card-header py-3">
@@ -33,18 +33,18 @@
                         <div class="form-group">
                             <label class="mt-1 mb-3"><strong>Export Fields</strong></label>
 
-                            <div class="row">
-                                <div class="col-12 col-sm-4" v-for="(group_fields, group_name) in exportable_groups">
+                            <div class="flex">
+                                <div class="w-full md:w-1/3" v-for="(group_fields, group_name) in exportable_groups">
                                     <div class="card mb-4">
                                         <div class="card-header">
                                             <strong>{{ group_name }}</strong>
                                         </div>
 
                                         <div class="card-body">
-                                            <div class="form-check" v-for="(field_name, field_value) in group_fields['fields']">
-                                                <input class="form-check-input" type="checkbox" :value="group_name + '.' + field_value" :id="'field-' + group_name + '.' + field_name" v-model="value.export_fields" />
-                                                <label class="form-check-label" :for="'field-' + group_name + '.' + field_name"> {{ field_name }} </label>
-                                            </div>
+                                            <label class="flex items-center select-none space-x-2" v-for="(field_name, field_value) in group_fields['fields']">
+                                                <input type="checkbox" class="checkbox" :value="group_name + '.' + field_value" v-model="value.export_fields" />
+                                                <span>{{ field_name }}</span>
+                                            </label>
                                         </div>
                                     </div>
                                 </div>
@@ -54,21 +54,43 @@
                 </div>
 
                 <div class="card mb-4">
-                    <div class="card-header py-3">
+                    <div class="py-3">
                         <strong>Preview</strong>
                     </div>
-                    <textarea ref="previewField"></textarea>
+                    <template v-if="preview">
+                        <div class="w-full max-h-8 overflow-auto">
+                            <table class="table-auto">
+                                <thead>
+                                    <tr>
+                                        <th v-for="label in preview.headings" v-html="label.split('\n').join('<br />')" class="border p-2"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="item in preview.items">
+                                        <td v-for="(label, key) in preview.headings" class="border p-2">
+                                            {{ item[key] }}
+                                        </td>
+                                    </tr>
+                                    <tr v-if="preview.count > 1">
+                                        <td v-for="(label, key) in preview.headings" class="border p-2">...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </template>
                 </div>
             </div>
         </template>
-    </default-field>
+    </DefaultField>
 </template>
 
 <script>
 import { FormField, HandlesValidationErrors } from "laravel-nova";
 import VueQueryBuilder from "vue-query-builder";
-import CodeMirror from "codemirror";
-import "codemirror/mode/javascript/javascript";
+import { isProxy, toRaw } from "vue";
+
+// import CodeMirror from "codemirror";
+// import "codemirror/mode/javascript/javascript";
 var _ = require("lodash");
 
 export default {
@@ -78,6 +100,7 @@ export default {
 
     components: {
         VueQueryBuilder,
+        // FormCodeField, // @todo hier mee bezig
     },
 
     data: function () {
@@ -88,7 +111,7 @@ export default {
             // loadrelation: [],
             rules: [],
             preview: "...",
-            codemirror: null,
+            // codemirror: null,
         };
     },
 
@@ -106,8 +129,6 @@ export default {
             return _.pickBy(groups, function (data, name) {
                 return data["type"] == "main" || (data["type"] == "relation" && selected_relations.includes(name));
             });
-
-            return groups;
         },
 
         exportable_groupnames: function () {
@@ -138,13 +159,11 @@ export default {
         "value.loadrelation": {
             deep: true,
             handler: function (val, oldVal) {
+                if (oldVal == "") return;
                 // if a relation was DESELECTED
                 if (oldVal && val.length < oldVal.length) {
-                    console.log(val, oldVal);
-
                     // remove unselected relations from value.export_fields
                     var exportable_groupnames = this.exportable_groupnames;
-
                     this.value.export_fields = _.toArray(
                         _.pickBy(this.value.export_fields, function (val) {
                             var parts = val.split(".");
@@ -152,7 +171,6 @@ export default {
                         })
                     );
                 }
-
                 this.updatePreview();
             },
         },
@@ -160,6 +178,15 @@ export default {
         "value.query": {
             deep: true,
             handler: function (val, oldVal) {
+                console.log("WATCH value.query", { val: toRaw(val), oldVal: toRaw(oldVal) });
+                this.updatePreview(1000);
+            },
+        },
+
+        "value.export_fields": {
+            deep: true,
+            handler: function (val, oldVal) {
+                console.log("WATCH value.export_fields", { val: toRaw(val), oldVal: toRaw(oldVal) });
                 this.updatePreview(1000);
             },
         },
@@ -185,15 +212,38 @@ export default {
          * Set the initial, internal value for the field.
          */
         setInitialValue() {
-            // this.value =  this.field.value || this.getDefaultValue();
+            // this.value = this.field.value || this.getDefaultValue();
+            this.value = {};
+            this.fetchInit();
         },
 
         /**
          * Fill the given FormData object with the field's internal value.
          */
         fill(formData) {
-            formData.append(this.field.attribute, JSON.stringify(this.value) || null);
+            formData.append(this.fieldAttribute, JSON.stringify(this.value) || null);
         },
+
+        // updatePreview(delay = 0) {
+        //     var vm = this;
+
+        //     clearTimeout(vm.updatePreviewTimeOut);
+        //     vm.updatePreviewTimeOut = setTimeout(function () {
+        //         var postdata = vm.value;
+
+        //         if (postdata.entrypoint === null) return;
+
+        //         Nova.request()
+        //             .post("/nova-vendor/eightbitsnl/nova-reports/preview" + (typeof vm.resourceId == "undefined" ? "" : "/" + vm.resourceId), postdata)
+        //             .then((response) => {
+        //                 vm.preview = response.data;
+        //                 // vm.codemirror.getDoc().setValue(JSON.stringify(response.data, null, 2));
+        //             })
+        //             .catch(function (error) {
+        //                 console.log(error.toJSON());
+        //             });
+        //     }, delay);
+        // },
 
         updatePreview(delay = 0) {
             var vm = this;
@@ -202,46 +252,42 @@ export default {
             vm.updatePreviewTimeOut = setTimeout(function () {
                 var postdata = vm.value;
 
+                if (postdata.entrypoint == null) return;
+
                 Nova.request()
-                    .post("/nova-vendor/eightbitsnl/nova-reports/preview" + (typeof vm.resourceId == "undefined" ? "" : "/" + vm.resourceId), postdata)
+                    .post("/nova-vendor/eightbitsnl/nova-reports/webpreview" + (typeof vm.resourceId == "undefined" ? "" : "/" + vm.resourceId), postdata)
                     .then((response) => {
                         vm.preview = response.data;
-                        vm.codemirror.getDoc().setValue(JSON.stringify(response.data, null, 2));
+                        // vm.codemirror.getDoc().setValue(JSON.stringify(response.data, null, 2));
+                    })
+                    .catch(function (error) {
+                        console.log(error.toJSON());
                     });
             }, delay);
         },
-    },
 
-    /**
-     * Mount the component.
-     */
-    mounted() {
-        var vm = this;
-        Nova.request()
-            .get("/nova-vendor/eightbitsnl/nova-reports/init" + (typeof this.resourceId == "undefined" ? "" : "/" + this.resourceId))
-            .then((response) => {
-                // set a default value for value.entrypoint
-                if (!vm.field.value.entrypoint) {
-                    vm.field.value.entrypoint = _.keys(response.data.entrypoints)[0];
-                }
+        fetchInit() {
+            var vm = this;
+            Nova.request()
+                .get("/nova-vendor/eightbitsnl/nova-reports/init" + (typeof this.resourceId == "undefined" ? "" : "/" + this.resourceId))
+                .then((response) => {
+                    console.log("response", response);
+                    // set a default value for value.entrypoint
+                    if (!vm.field.value.entrypoint) {
+                        vm.field.value.entrypoint = _.keys(response.data.entrypoints)[0];
+                    }
 
-                // update list of available entrypoints
-                vm.entrypoints = response.data.entrypoints;
+                    // update list of available entrypoints
+                    vm.entrypoints = response.data.entrypoints;
 
-                // set initial value
-                vm.value = vm.field.value || vm.getDefaultValue();
-            });
-
-        this.codemirror = CodeMirror.fromTextArea(this.$refs.previewField, {
-            mode: "application/json",
-            tabSize: 4,
-            indentWithTabs: true,
-            lineWrapping: true,
-            lineNumbers: true,
-            theme: "dracula",
-            readOnly: true,
-        });
-        this.codemirror.setSize("100%", 500);
+                    // set initial value
+                    vm.value.entrypoint = response.data.entrypoint;
+                    vm.value.query = response.data.query;
+                    vm.value.export_fields = response.data.export_fields;
+                    vm.value.loadrelation = response.data.loadrelation;
+                    // vm.value = vm.field.value || vm.getDefaultValue();
+                });
+        },
     },
 };
 </script>
@@ -250,9 +296,5 @@ export default {
 .querybuilderfield-wrapper {
     @import "~bootstrap/scss/bootstrap.scss";
 }
-
-@import "~codemirror/lib/codemirror.css";
-@import "~codemirror/theme/dracula.css";
-
 @import "~vue-query-builder/dist/VueQueryBuilder.css";
 </style>

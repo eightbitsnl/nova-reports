@@ -8,4 +8,5 @@ module.exports = {
     extend: {},
   },
   plugins: [],
+  important: '.querybuilderfield-wrapper'
 }

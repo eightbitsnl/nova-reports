@@ -1,9 +1,9 @@
-import IndexField from "./components/nova/IndexField.vue";
-import DetailField from "./components/nova/DetailField.vue";
-import FormField from "./components/nova/FormField.vue";
+import IndexField from "./components/nova/IndexField";
+import DetailField from "./components/nova/DetailField";
+import FormField from "./components/nova/FormField";
 
-Nova.booting((Vue, router, store) => {
-    Vue.component("index-querybuilder-field", IndexField);
-    Vue.component("detail-querybuilder-field", DetailField);
-    Vue.component("form-querybuilder-field", FormField);
+Nova.booting((app, store) => {
+    app.component("index-querybuilder-field", IndexField);
+    app.component("detail-querybuilder-field", DetailField);
+    app.component("form-querybuilder-field", FormField);
 });
