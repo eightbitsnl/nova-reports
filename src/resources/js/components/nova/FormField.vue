@@ -1,47 +1,47 @@
 <template>
     <DefaultField :field="field" :errors="errors" :show-help-text="showHelpText" :full-width-content="fullWidthContent">
         <template #field>
-            <div class="querybuilderfield-wrapper">
-                <div class="card mb-4">
-                    <div class="card-header py-3">
+            <div>
+                <div class="mb-4 border rounded bg-gray-50">
+                    <div class="p-4 border-b">
                         <strong>Query</strong>
                     </div>
-                    <div class="card-body bg-light">
-                        <div class="form-group">
+                    <div class="p-4 space-y-4">
+                        <div class="flex flex-col">
                             <label class="mt-1 mb-3"><strong>Select</strong></label>
-                            <select class="form-control" name="" id="" v-model="value.entrypoint">
+                            <select class="rounded form-control form-input-bordered" name="" id="" v-model="value.entrypoint">
                                 <option v-for="entrypoint in entrypoints" :value="entrypoint.value">{{ entrypoint.label }}</option>
                             </select>
                         </div>
 
-                        <div class="form-group">
-                            <label class="mt-1 mb-3"><strong>Filter</strong></label>
-                            <vue-query-builder :rules="rules" v-model="value.query"></vue-query-builder>
+                        <div class="querybuilderfield-wrapper">
+                            <label class="mt-1"><strong>Filter</strong></label>
+                            <vue-query-builder :rules="rules" v-model="value.query" />
                         </div>
 
-                        <div class="form-group" v-if="available_relations.length">
-                            <label class="mt-1 mb-3"><strong>Relations</strong></label>
+                        <div v-if="available_relations.length">
+                            <label class="mt-1"><strong>Relations</strong></label>
 
-                            <div class="form-check" v-for="(relation, relation_i) in available_relations">
-                                <input class="form-check-input" type="checkbox" :value="relation" :id="'relations' + relation_i" v-model="value.loadrelation" />
-                                <label class="form-check-label" :for="'relations' + relation_i">
+                            <label class="flex items-center mt-3 space-x-2 select-none" v-for="(relation, relation_i) in available_relations">
+                                <input class="checkbox" type="checkbox" :value="relation" :id="'relations' + relation_i" v-model="value.loadrelation" />
+                                <span>
                                     {{ relation }}
-                                </label>
-                            </div>
+                                </span>
+                            </label>
                         </div>
 
-                        <div class="form-group">
-                            <label class="mt-1 mb-3"><strong>Export Fields</strong></label>
+                        <div>
+                            <label class="mt-1"><strong>Export Fields</strong></label>
 
-                            <div class="flex">
-                                <div class="w-full md:w-1/3" v-for="(group_fields, group_name) in exportable_groups">
-                                    <div class="card mb-4">
-                                        <div class="card-header">
+                            <div class="flex flex-wrap mt-3 -m-1">
+                                <div class="flex pr-4" v-for="(group_fields, group_name) in exportable_groups">
+                                    <div class="mb-4 bg-white border rounded">
+                                        <div class="p-4 bg-gray-200">
                                             <strong>{{ group_name }}</strong>
                                         </div>
 
-                                        <div class="card-body">
-                                            <label class="flex items-center select-none space-x-2" v-for="(field_name, field_value) in group_fields['fields']">
+                                        <div class="p-4">
+                                            <label class="flex items-center mt-3 space-x-2 select-none" v-for="(field_name, field_value) in group_fields['fields']">
                                                 <input type="checkbox" class="checkbox" :value="group_name + '.' + field_value" v-model="value.export_fields" />
                                                 <span>{{ field_name }}</span>
                                             </label>
@@ -53,26 +53,26 @@
                     </div>
                 </div>
 
-                <div class="card mb-4">
-                    <div class="py-3">
+                <div class="mb-4 border rounded bg-gray-50">
+                    <div class="p-4 border-b">
                         <strong>Preview</strong>
                     </div>
                     <template v-if="preview">
-                        <div class="w-full max-h-8 overflow-auto">
+                        <div class="w-full overflow-auto" style="max-height: 500px">
                             <table class="table-auto">
-                                <thead>
+                                <thead class="bg-gray-50 dark:bg-gray-800">
                                     <tr>
-                                        <th v-for="label in preview.headings" v-html="label.split('\n').join('<br />')" class="border p-2"></th>
+                                        <th v-for="label in preview.headings" v-html="label.split('\n').join('&nbsp;')" class="p-2 tracking-wide text-left text-gray-500 uppercase whitespace-nowrap text-xxs"></th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody class="bg-white divide-y divide-gray-100 dark:divide-gray-700">
                                     <tr v-for="item in preview.items">
-                                        <td v-for="(label, key) in preview.headings" class="border p-2">
+                                        <td v-for="(label, key) in preview.headings" class="p-2">
                                             {{ item[key] }}
                                         </td>
                                     </tr>
                                     <tr v-if="preview.count > 1">
-                                        <td v-for="(label, key) in preview.headings" class="border p-2">...</td>
+                                        <td v-for="(label, key) in preview.headings" class="p-2">...</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -80,6 +80,7 @@
                     </template>
                 </div>
             </div>
+            <div class="overflow-scroll"></div>
         </template>
     </DefaultField>
 </template>
@@ -87,10 +88,8 @@
 <script>
 import { FormField, HandlesValidationErrors } from "laravel-nova";
 import VueQueryBuilder from "vue-query-builder";
-import { isProxy, toRaw } from "vue";
+import { toRaw } from "vue";
 
-// import CodeMirror from "codemirror";
-// import "codemirror/mode/javascript/javascript";
 var _ = require("lodash");
 
 export default {
@@ -100,18 +99,13 @@ export default {
 
     components: {
         VueQueryBuilder,
-        // FormCodeField, // @todo hier mee bezig
     },
 
     data: function () {
         return {
-            // entrypoint: null,
             entrypoints: [],
-            // relations: [],
-            // loadrelation: [],
-            rules: [],
             preview: "...",
-            // codemirror: null,
+            rules: [],
         };
     },
 
@@ -224,27 +218,6 @@ export default {
             formData.append(this.fieldAttribute, JSON.stringify(this.value) || null);
         },
 
-        // updatePreview(delay = 0) {
-        //     var vm = this;
-
-        //     clearTimeout(vm.updatePreviewTimeOut);
-        //     vm.updatePreviewTimeOut = setTimeout(function () {
-        //         var postdata = vm.value;
-
-        //         if (postdata.entrypoint === null) return;
-
-        //         Nova.request()
-        //             .post("/nova-vendor/eightbitsnl/nova-reports/preview" + (typeof vm.resourceId == "undefined" ? "" : "/" + vm.resourceId), postdata)
-        //             .then((response) => {
-        //                 vm.preview = response.data;
-        //                 // vm.codemirror.getDoc().setValue(JSON.stringify(response.data, null, 2));
-        //             })
-        //             .catch(function (error) {
-        //                 console.log(error.toJSON());
-        //             });
-        //     }, delay);
-        // },
-
         updatePreview(delay = 0) {
             var vm = this;
 
@@ -297,4 +270,45 @@ export default {
     @import "~bootstrap/scss/bootstrap.scss";
 }
 @import "~vue-query-builder/dist/VueQueryBuilder.css";
+
+div .vue-query-builder {
+    @apply border rounded bg-white mb-4  #{!important};
+}
+
+.querybuilderfield-wrapper {
+    .form-select {
+        background-color: white !important;
+        border-radius: 0.25rem !important;
+        border: rgb(203, 213, 225) solid 1px !important;
+    }
+    .form-control {
+        background-color: white !important;
+        border-radius: 0.25rem !important;
+        border: rgb(203, 213, 225) solid 1px !important;
+    }
+    select#vqb-match-type {
+        background-color: white !important;
+        border-radius: 0.25rem !important;
+        border: rgb(203, 213, 225) solid 1px !important;
+    }
+    .card-header:first-child {
+        padding: 16px !important;
+        border-bottom: 1px !important;
+        background-color: rgb(226, 232, 240) !important;
+    }
+
+    .vqb-group.depth-2,
+    .vqb-group.depth-3,
+    .vqb-rule {
+        border-radius: 0.25rem !important;
+        border-top: 1px solid rgba(0, 0, 0, 0.125) !important;
+        border-right: 1px solid rgba(0, 0, 0, 0.125) !important;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.125) !important;
+    }
+
+    .btn {
+        background-color: rgb(14, 165, 233) !important;
+        border-radius: 0.25rem !important;
+    }
+}
 </style>
