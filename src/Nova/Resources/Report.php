@@ -145,6 +145,6 @@ class Report extends Resource
      */
     public function actions(Request $request)
     {
-        return [new Excel()];
+        return [(new Excel())->withName("Generate Excel")];
     }
 }

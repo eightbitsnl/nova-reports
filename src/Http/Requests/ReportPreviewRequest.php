@@ -25,8 +25,8 @@ class ReportPreviewRequest extends FormRequest
     {
         return [
             "entrypoint" => ['required', "string"],
-            "relations" => ['required', "array"],
-            "query" => ['required', "array"],
+            "relations" => ['nullable', "array"],
+            "query" => ['nullable', "array"],
         ];
     }
 }

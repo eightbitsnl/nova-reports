@@ -261,7 +261,7 @@ class Report extends Model
     {
         $firstModel = $this->getModelsQuery()->first();
 
-        $rows = $this->getRowsForModel($firstModel);
+        $rows = $firstModel ? $this->getRowsForModel($firstModel) : new Collection([]);
 
         return [
             "count" => $this->getCount(),
@@ -358,7 +358,7 @@ class Report extends Model
      * @param Illuminate\Database\Eloquent\Model $model
      * @return \Illuminate\Support\Collection Collection of rows
      */
-    public function getRowsForModel($model)
+    public function getRowsForModel(Model $model)
     {
         switch ($this->grouping_option) {
             default:
@@ -489,12 +489,12 @@ class Report extends Model
     }
 
     /**
-     * Undocumented function
+     * Get a Collection for rows for a single model, flat
      *
-     * @param [type] $model
-     * @return void
+     * @param Illuminate\Database\Eloquent\Model $model
+     * @return \Illuminate\Support\Collection Collection of rows
      */
-    protected function getRowsForModelFlat($model)
+    protected function getRowsForModelFlat(Model $model): Collection
     {
         $hydrated = $this->getHydratedDataCollection($model);
 
@@ -528,7 +528,13 @@ class Report extends Model
         ]);
     }
 
-    protected function getRowsForModelCrossjoined($model)
+    /**
+     * Get a Collection for rows for a single model, crossjoined
+     *
+     * @param Illuminate\Database\Eloquent\Model $model
+     * @return \Illuminate\Support\Collection Collection of rows
+     */
+    protected function getRowsForModelCrossjoined(Model $model): Collection
     {
         $hydrated = $this->getHydratedDataCollection($model);
 

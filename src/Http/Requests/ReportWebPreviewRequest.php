@@ -25,9 +25,9 @@ class ReportWebPreviewRequest extends FormRequest
     {
         return [
             "entrypoint" => ['required', "string"],
-            "export_fields" => ['required', "array"],
-            "loadrelation" => ['required', "array"],
-            "query" => ['required', "array"],
+            "export_fields" => ['nullable', "array"],
+            "loadrelation" => ['nullable', "array"],
+            "query" => ['nullable', "array"],
         ];
     }
 }

@@ -13,10 +13,10 @@ Route::get("init/{report?}", function (Request $request, Report $report = null) 
     // --------------------------------------------------
     $result = [];
 
-    $result["entrypoint"] = $report->entrypoint;
-    $result["loadrelation"] = $report->loadrelation;
-    $result["query"] = $report->query;
-    $result["export_fields"] = $report->export_fields ?: [];
+    $result["entrypoint"] = optional($report)->entrypoint;
+    $result["loadrelation"] = optional($report)->loadrelation;
+    $result["query"] = optional($report)->query;
+    $result["export_fields"] = optional($report)->export_fields ?: [];
 
     // generate a list of selectable entrypoints
     // --------------------------------------------------

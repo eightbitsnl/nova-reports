@@ -57,26 +57,29 @@
                     <div class="p-4 border-b">
                         <strong>Preview</strong>
                     </div>
-                    <template v-if="preview">
-                        <div class="w-full overflow-auto" style="max-height: 500px">
-                            <table class="table-auto">
-                                <thead class="bg-gray-50 dark:bg-gray-800">
-                                    <tr>
-                                        <th v-for="label in preview.headings" v-html="label.split('\n').join('&nbsp;')" class="p-2 tracking-wide text-left text-gray-500 uppercase whitespace-nowrap text-xxs"></th>
-                                    </tr>
-                                </thead>
-                                <tbody class="bg-white divide-y divide-gray-100 dark:divide-gray-700">
-                                    <tr v-for="item in preview.items">
-                                        <td v-for="(label, key) in preview.headings" class="p-2">
-                                            {{ item[key] }}
-                                        </td>
-                                    </tr>
-                                    <tr v-if="preview.count > 1">
-                                        <td v-for="(label, key) in preview.headings" class="p-2">...</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
+                    <template v-if="previewLoading">
+                        <div class="bg-white p-4">Loading...</div>
+                    </template>
+                    <template v-else>
+                        <template v-if="preview.count && preview.count > 0">
+                            <div class="w-full overflow-auto" style="max-height: 500px">
+                                <table class="table-auto">
+                                    <thead class="bg-gray-50 dark:bg-gray-800">
+                                        <tr>
+                                            <th v-for="label in preview.headings" v-html="label.split('\n').join('&nbsp;')" class="p-2 tracking-wide text-left text-gray-500 uppercase whitespace-nowrap text-xxs"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-100 dark:divide-gray-700">
+                                        <tr v-for="item in preview.items">
+                                            <td v-for="(label, key) in preview.headings" class="p-2">
+                                                {{ item[key] }}
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </template>
+                        <div class="bg-gray p-2">Results: {{ preview.count }}</div>
                     </template>
                 </div>
             </div>
@@ -103,8 +106,11 @@ export default {
 
     data: function () {
         return {
+            initDone: false,
             entrypoints: [],
-            preview: "...",
+            preview: null,
+            previewLoading: true,
+            updatePreviewTimeOut: null,
             rules: [],
         };
     },
@@ -165,14 +171,13 @@ export default {
                         })
                     );
                 }
-                this.updatePreview();
+                this.updatePreview(1000);
             },
         },
 
         "value.query": {
             deep: true,
             handler: function (val, oldVal) {
-                console.log("WATCH value.query", { val: toRaw(val), oldVal: toRaw(oldVal) });
                 this.updatePreview(1000);
             },
         },
@@ -180,7 +185,6 @@ export default {
         "value.export_fields": {
             deep: true,
             handler: function (val, oldVal) {
-                console.log("WATCH value.export_fields", { val: toRaw(val), oldVal: toRaw(oldVal) });
                 this.updatePreview(1000);
             },
         },
@@ -220,8 +224,10 @@ export default {
 
         updatePreview(delay = 0) {
             var vm = this;
+            if (!vm.initDone) return;
 
             clearTimeout(vm.updatePreviewTimeOut);
+            vm.previewLoading = true;
             vm.updatePreviewTimeOut = setTimeout(function () {
                 var postdata = vm.value;
 
@@ -231,10 +237,10 @@ export default {
                     .post("/nova-vendor/eightbitsnl/nova-reports/webpreview" + (typeof vm.resourceId == "undefined" ? "" : "/" + vm.resourceId), postdata)
                     .then((response) => {
                         vm.preview = response.data;
-                        // vm.codemirror.getDoc().setValue(JSON.stringify(response.data, null, 2));
+                        vm.previewLoading = false;
                     })
                     .catch(function (error) {
-                        console.log(error.toJSON());
+                        console.error(error.toJSON());
                     });
             }, delay);
         },
@@ -244,7 +250,6 @@ export default {
             Nova.request()
                 .get("/nova-vendor/eightbitsnl/nova-reports/init" + (typeof this.resourceId == "undefined" ? "" : "/" + this.resourceId))
                 .then((response) => {
-                    console.log("response", response);
                     // set a default value for value.entrypoint
                     if (!vm.field.value.entrypoint) {
                         vm.field.value.entrypoint = _.keys(response.data.entrypoints)[0];
@@ -259,6 +264,8 @@ export default {
                     vm.value.export_fields = response.data.export_fields;
                     vm.value.loadrelation = response.data.loadrelation;
                     // vm.value = vm.field.value || vm.getDefaultValue();
+
+                    vm.initDone = true;
                 });
         },
     },
