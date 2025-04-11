@@ -12,6 +12,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
+use InvalidArgumentException;
 
 class Report extends Model
 {
@@ -87,7 +88,7 @@ class Report extends Model
             'u' => optional(auth()->user())->id,
             'p' => $path
         ]));
-        
+
         $url = URL::temporarySignedRoute(
             'nova-reports.download_signed',
             now()->addMinutes(config('nova-reports.keep_exports_for_minutes')),
@@ -256,7 +257,14 @@ class Report extends Model
      */
     public function getCount(): int
     {
-        return $this->getQuerybuilderInstance()->count();
+        try
+        {
+            return $this->getQuerybuilderInstance()->count();
+        }
+        catch(InvalidArgumentException $e)
+        {
+            return 0;
+        }
     }
 
     /**
