@@ -77,7 +77,7 @@ class Excel implements FromQuery, WithHeadings, WithMapping, WithProperties, Sho
      * @param mixed $model
      * @return array rows for the export
      */
-    public function map($model): array
+    public function map(mixed $model): array
     {
         $rows = $this->report->getRowsForModel($model);
 
@@ -105,7 +105,7 @@ class Excel implements FromQuery, WithHeadings, WithMapping, WithProperties, Sho
      *
      * @return void
      */
-    public function query()
+    public function query(): \Illuminate\Database\Query\Builder|\Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Eloquent\Relations\Relation
     {
         return $this->report->getQuerybuilderInstance();
     }
@@ -122,7 +122,7 @@ class Excel implements FromQuery, WithHeadings, WithMapping, WithProperties, Sho
     //         ->setWrapText(true);
     // }
 
-    public function defaultStyles(Style $defaultStyle)
+    public function defaultStyles(Style $defaultStyle): ?array
     {
         // set alignment
         $defaultStyle
@@ -131,8 +131,8 @@ class Excel implements FromQuery, WithHeadings, WithMapping, WithProperties, Sho
             ->setVertical(Alignment::VERTICAL_TOP)
             ->setWrapText(true);
 
-        // set wrap
-        return $defaultStyle;
+        // the style object is changed in place (Excel 4 expects an array of extra styles or null)
+        return null;
     }
 
     /**
