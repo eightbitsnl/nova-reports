@@ -259,7 +259,8 @@ export default {
                     vm.entrypoints = response.data.entrypoints;
 
                     // set initial value
-                    vm.value.entrypoint = response.data.entrypoint;
+                    // a new report has no entrypoint yet: default to the first one, like the select shows
+                    vm.value.entrypoint = response.data.entrypoint || _.keys(response.data.entrypoints)[0];
                     vm.value.query = response.data.query;
                     vm.value.export_fields = response.data.export_fields;
                     vm.value.loadrelation = response.data.loadrelation;
